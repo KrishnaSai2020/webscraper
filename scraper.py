@@ -4,19 +4,20 @@ from bs4 import BeautifulSoup
 res = requests.get('https://news.ycombinator.com/newest')
 soup = BeautifulSoup(res.text, 'html.parser')
 links = soup.select('.storylink')
-votes = soup.select('.score')
+subtext = soup.select('.subtext')
 
 
-def create_custom_hacker_news(links, votes):
+def create_custom_hacker_news(links, subtext):
     hn = []
     for idx, item in enumerate(links):
         title = links[idx].getText()
-        href = links[idx].get('href',None)
-        points = int(votes[idx].getText().replace(' points', ''))
-
-        hn.append({'title': title, 'link': href})
+        href = links[idx].get('href', None)
+        vote = subtext[idx].select('.score')
+        if len(vote):
+            points = int(vote[0].getText().replace(" points", "").replace('point', ''))
+            hn.append({'title': title, 'link': href, 'votes': points})
 
     return hn
 
 
-print(create_custom_hacker_news(links, votes))
+create_custom_hacker_news(links, subtext)
